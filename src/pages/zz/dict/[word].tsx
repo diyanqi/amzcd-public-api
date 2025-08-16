@@ -147,7 +147,7 @@ const DictPage: NextPage<DictPageProps> = ({ dictData, format }) => {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res, query }) => {
+export const getServerSideProps: GetServerSideProps = async ({ res, query }) => {
   try {
     const { word } = query
     const format = (query.format as string) || 'img'

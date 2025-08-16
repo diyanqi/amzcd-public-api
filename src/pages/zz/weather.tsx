@@ -1,4 +1,5 @@
 import type { GetServerSideProps, NextPage } from 'next'
+import type { IncomingMessage, ServerResponse } from 'http'
 
 interface WeatherData {
   location: string
@@ -10,7 +11,7 @@ interface WeatherData {
 }
 
 // 模拟天气数据（实际项目中应该调用真实的天气API）
-async function getWeatherData(ip: string): Promise<WeatherData> {
+async function getWeatherData(_ip: string): Promise<WeatherData> {
   return {
     location: '北京市',
     temperature: '22°C',
@@ -21,7 +22,7 @@ async function getWeatherData(ip: string): Promise<WeatherData> {
   }
 }
 
-function getClientIP(req: any): string {
+function getClientIP(req: IncomingMessage): string {
   const forwarded = req.headers['x-forwarded-for']
   const realIP = req.headers['x-real-ip']
   const remoteAddress = req.socket.remoteAddress
@@ -77,11 +78,10 @@ function generateWeatherSVG(weatherData: WeatherData): string {
 
 interface WeatherPageProps {
   weatherData: WeatherData
-  clientIP: string
   format: string
 }
 
-const WeatherPage: NextPage<WeatherPageProps> = ({ weatherData, clientIP, format }) => {
+const WeatherPage: NextPage<WeatherPageProps> = ({ weatherData, format }) => {
   if (format === 'json') {
     return null // JSON响应在getServerSideProps中处理
   }
