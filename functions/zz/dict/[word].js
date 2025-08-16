@@ -116,23 +116,30 @@ export async function onRequest({ request, params }) {
       let currentY = dictData.phonetic ? 160 : 120;
 
       dictData.definitions.forEach((def, index) => {
-        const meaning = def.meaning.length > 80 ? def.meaning.substring(0, 80) + '...' : def.meaning;
-        const example = def.example && def.example.length > 60 ? def.example.substring(0, 60) + '...' : def.example;
+        const meaningLines = def.meaning.match(/.{1,80}/g) || [def.meaning];
+        const exampleLines = def.example ? def.example.match(/.{1,60}/g) : [];
         
         definitionsSVG += `
           <!-- 定义 ${index + 1} -->
           <text x="40" y="${currentY}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#4299E1">${index + 1}. [${def.type}]</text>
-          <text x="60" y="${currentY + 25}" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">${meaning}</text>
         `;
-        
-        if (example) {
+        currentY += 30;
+
+        meaningLines.forEach((line) => {
           definitionsSVG += `
-            <text x="60" y="${currentY + 50}" font-family="Arial, sans-serif" font-size="14" font-style="italic" fill="#718096">例: ${example}</text>
+            <text x="60" y="${currentY}" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">${line}</text>
           `;
-          currentY += 90;
-        } else {
-          currentY += 70;
-        }
+          currentY += 25;
+        });
+
+        exampleLines.forEach((line) => {
+          definitionsSVG += `
+            <text x="60" y="${currentY}" font-family="Arial, sans-serif" font-size="14" font-style="italic" fill="#718096">例: ${line}</text>
+          `;
+          currentY += 25;
+        });
+
+        currentY += 20; // 添加额外的间距
       });
 
       // 生成同义词部分的SVG

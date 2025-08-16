@@ -6,7 +6,7 @@ dotenv.config();
 // AI聊天对话API - EdgeOne Pages Function  
 // 路径: /zz/q/{question}
 
-export async function onRequest({ request, params }) {
+export async function onRequest({ request, params, env }) {
   // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -39,8 +39,8 @@ export async function onRequest({ request, params }) {
       });
     }
 
-    const apiKey = process.env.AI_API_KEY;
-    const apiEndpoint = process.env.AI_API_ENDPOINT;
+    const apiKey = env.AI_API_KEY;
+    const apiEndpoint = env.AI_API_ENDPOINT;
 
     if (!apiKey || !apiEndpoint) {
       return new Response(JSON.stringify({
@@ -72,6 +72,29 @@ export async function onRequest({ request, params }) {
       console.error('AI API error:', apiError);
     }
 
+    const questionLines = question.match(/.{1,50}/g) || [question];
+    const answerLines = aiResponse.match(/.{1,50}/g) || [aiResponse];
+
+    let questionSVG = '';
+    let currentY = 40;
+
+    questionLines.forEach((line) => {
+      questionSVG += `
+        <text x="350" y="${currentY}" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">${line}</text>
+      `;
+      currentY += 30;
+    });
+
+    let answerSVG = '';
+    currentY = 100;
+
+    answerLines.forEach((line) => {
+      answerSVG += `
+        <text x="40" y="${currentY}" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">${line}</text>
+      `;
+      currentY += 25;
+    });
+
     const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="700" height="200" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
   <!-- 背景 -->
@@ -84,10 +107,10 @@ export async function onRequest({ request, params }) {
   <rect x="10" y="10" width="680" height="50" fill="#4299E1"/>
 
   <!-- 问题标题 -->
-  <text x="350" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">问题: ${question}</text>
+  ${questionSVG}
 
   <!-- 回答 -->
-  <text x="40" y="100" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">回答: ${aiResponse}</text>
+  ${answerSVG}
 
   <!-- 时间戳 -->
   <text x="350" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#A0AEC0">查询时间: ${new Date().toLocaleString('zh-CN')}</text>
