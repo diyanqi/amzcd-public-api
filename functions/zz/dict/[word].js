@@ -47,46 +47,34 @@ export async function onRequest({ request, params }) {
     };
 
     try {
-      const apiResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-      
+      const apiResponse = await fetch(`https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(word)}`);
+
       if (apiResponse.ok) {
         const apiData = await apiResponse.json();
-        
-        if (apiData && apiData.length > 0) {
-          const entry = apiData[0];
-          
+
+        if (apiData && apiData.entries && apiData.entries.length > 0) {
+          const entry = apiData.entries[0];
+
           // 提取音标
-          const phonetic = entry.phonetic || 
-            (entry.phonetics && entry.phonetics.length > 0 ? entry.phonetics[0].text : '') || '';
-          
+          const phonetic = entry.pronunciations && entry.pronunciations.length > 0 ? entry.pronunciations[0].text : '';
+
           // 提取定义
           const definitions = [];
-          if (entry.meanings && entry.meanings.length > 0) {
-            entry.meanings.forEach((meaning) => {
-              if (meaning.definitions && meaning.definitions.length > 0) {
-                meaning.definitions.slice(0, 3).forEach((def) => {
-                  definitions.push({
-                    type: meaning.partOfSpeech || 'unknown',
-                    meaning: def.definition || '无定义',
-                    example: def.example || ''
-                  });
-                });
-              }
+          if (entry.senses && entry.senses.length > 0) {
+            entry.senses.forEach((sense) => {
+              definitions.push({
+                type: entry.partOfSpeech || 'unknown',
+                meaning: sense.definition || '无定义',
+                example: sense.examples && sense.examples.length > 0 ? sense.examples[0] : ''
+              });
             });
           }
-          
+
           // 提取同义词
-          const synonyms = [];
-          if (entry.meanings && entry.meanings.length > 0) {
-            entry.meanings.forEach((meaning) => {
-              if (meaning.synonyms && meaning.synonyms.length > 0) {
-                synonyms.push(...meaning.synonyms.slice(0, 5));
-              }
-            });
-          }
-          
+          const synonyms = entry.synonyms || [];
+
           dictData = {
-            word: entry.word || word,
+            word: apiData.word || word,
             phonetic: phonetic,
             definitions: definitions.length > 0 ? definitions : [{
               type: 'unknown',
