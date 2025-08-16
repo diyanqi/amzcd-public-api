@@ -1,8 +1,3 @@
-import dotenv from 'dotenv';
-import fetch from 'node-fetch';
-
-dotenv.config();
-
 // AI聊天对话API - EdgeOne Pages Function  
 // 路径: /zz/q/{question}
 
