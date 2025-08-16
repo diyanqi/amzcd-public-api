@@ -1,4 +1,5 @@
 import type { GetServerSideProps, NextPage } from 'next'
+import axios from 'axios'
 
 interface DictData {
   word: string
@@ -11,52 +12,66 @@ interface DictData {
   synonyms?: string[]
 }
 
-// 模拟词典数据（实际项目中应该调用真实的词典API）
+// 调用真实的词典API
 async function getDictionaryData(word: string): Promise<DictData> {
-  // 简单的模拟数据
-  const mockData: { [key: string]: DictData } = {
-    'hello': {
-      word: 'hello',
-      phonetic: '/həˈloʊ/',
-      definitions: [
-        {
-          type: 'interjection',
-          meaning: '你好；喂',
-          example: 'Hello, how are you?'
-        },
-        {
-          type: 'noun',
-          meaning: '招呼，问候',
-          example: 'Give my hello to your family.'
-        }
-      ],
-      synonyms: ['hi', 'greetings', 'hey']
-    },
-    'world': {
-      word: 'world',
-      phonetic: '/wɜːrld/',
-      definitions: [
-        {
-          type: 'noun',
-          meaning: '世界；地球',
-          example: 'The world is a beautiful place.'
-        },
-        {
-          type: 'noun',
-          meaning: '领域；范围',
-          example: 'The world of science is fascinating.'
-        }
-      ],
-      synonyms: ['earth', 'globe', 'universe']
+  try {
+    const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
+    
+    if (response.data && response.data.length > 0) {
+      const entry = response.data[0]
+      
+      // 提取音标
+      const phonetic = entry.phonetic || 
+        (entry.phonetics && entry.phonetics.length > 0 ? entry.phonetics[0].text : '') || ''
+      
+      // 提取定义
+      const definitions: DictData['definitions'] = []
+      if (entry.meanings && entry.meanings.length > 0) {
+        entry.meanings.forEach((meaning: any) => {
+          if (meaning.definitions && meaning.definitions.length > 0) {
+            meaning.definitions.slice(0, 3).forEach((def: any) => { // 限制最多3个定义
+              definitions.push({
+                type: meaning.partOfSpeech || 'unknown',
+                meaning: def.definition || '无定义',
+                example: def.example || ''
+              })
+            })
+          }
+        })
+      }
+      
+      // 提取同义词
+      const synonyms: string[] = []
+      if (entry.meanings && entry.meanings.length > 0) {
+        entry.meanings.forEach((meaning: any) => {
+          if (meaning.synonyms && meaning.synonyms.length > 0) {
+            synonyms.push(...meaning.synonyms.slice(0, 5)) // 限制最多5个同义词
+          }
+        })
+      }
+      
+      return {
+        word: entry.word || word,
+        phonetic: phonetic,
+        definitions: definitions.length > 0 ? definitions : [{
+          type: 'unknown',
+          meaning: '未找到定义',
+          example: ''
+        }],
+        synonyms: synonyms.length > 0 ? [...new Set(synonyms)] : undefined // 去重
+      }
     }
+  } catch (error) {
+    console.error('Dictionary API error:', error)
   }
-
-  return mockData[word.toLowerCase()] || {
+  
+  // 如果API调用失败，返回默认错误信息
+  return {
     word: word,
     definitions: [
       {
-        type: 'unknown',
-        meaning: '抱歉，未找到该单词的释义',
+        type: 'error',
+        meaning: '抱歉，无法获取该单词的释义。请检查拼写或稍后再试。',
         example: ''
       }
     ]
@@ -65,8 +80,8 @@ async function getDictionaryData(word: string): Promise<DictData> {
 
 function generateDictionarySVG(dictData: DictData): string {
   const baseHeight = 300
-  const definitionsHeight = dictData.definitions.length * 80
-  const synonymsHeight = dictData.synonyms ? 50 : 0
+  const definitionsHeight = dictData.definitions.length * 90 // 增加每个定义的高度
+  const synonymsHeight = dictData.synonyms && dictData.synonyms.length > 0 ? 70 : 0
   const height = Math.max(baseHeight + definitionsHeight + synonymsHeight, 400)
   const timestamp = new Date().toLocaleString('zh-CN')
 
@@ -75,28 +90,33 @@ function generateDictionarySVG(dictData: DictData): string {
   let currentY = dictData.phonetic ? 160 : 120
 
   dictData.definitions.forEach((def, index) => {
+    // 处理过长的定义文本
+    const meaning = def.meaning.length > 80 ? def.meaning.substring(0, 80) + '...' : def.meaning
+    const example = def.example && def.example.length > 60 ? def.example.substring(0, 60) + '...' : def.example
+    
     definitionsSVG += `
       <!-- 定义 ${index + 1} -->
       <text x="40" y="${currentY}" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#4299E1">${index + 1}. [${def.type}]</text>
-      <text x="60" y="${currentY + 25}" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">${def.meaning}</text>
+      <text x="60" y="${currentY + 25}" font-family="Arial, sans-serif" font-size="16" fill="#2D3748">${meaning}</text>
     `
     
-    if (def.example) {
+    if (example) {
       definitionsSVG += `
-        <text x="60" y="${currentY + 45}" font-family="Arial, sans-serif" font-size="14" font-style="italic" fill="#718096">例: ${def.example}</text>
+        <text x="60" y="${currentY + 50}" font-family="Arial, sans-serif" font-size="14" font-style="italic" fill="#718096">例: ${example}</text>
       `
-      currentY += 80
+      currentY += 90
     } else {
-      currentY += 65
+      currentY += 70
     }
   })
 
   // 生成同义词部分的SVG
   let synonymsSVG = ''
   if (dictData.synonyms && dictData.synonyms.length > 0) {
+    const synonymsText = dictData.synonyms.slice(0, 8).join(', ') // 限制显示的同义词数量
     synonymsSVG = `
       <text x="40" y="${currentY + 20}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#4299E1">同义词:</text>
-      <text x="60" y="${currentY + 40}" font-family="Arial, sans-serif" font-size="14" fill="#2D3748">${dictData.synonyms.join(', ')}</text>
+      <text x="60" y="${currentY + 45}" font-family="Arial, sans-serif" font-size="14" fill="#2D3748">${synonymsText}</text>
     `
   }
 
@@ -122,6 +142,9 @@ function generateDictionarySVG(dictData: DictData): string {
   
   <!-- 同义词 -->
   ${synonymsSVG}
+  
+  <!-- API来源 -->
+  <text x="60" y="${height - 40}" font-family="Arial, sans-serif" font-size="12" fill="#A0AEC0">数据来源: Free Dictionary API</text>
   
   <!-- 时间戳 -->
   <text x="350" y="${height - 20}" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#A0AEC0">查询时间: ${timestamp}</text>

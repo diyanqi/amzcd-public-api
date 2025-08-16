@@ -33,7 +33,7 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">词典查询</h3>
               <p className="text-gray-600 mb-4">
-                查询单词的详细释义信息
+                查询英文单词的详细释义信息（基于Free Dictionary API）
               </p>
               <code className="bg-gray-100 px-3 py-2 rounded text-sm">
                 GET /zz/dict/{'{单词}'}?format=json/img

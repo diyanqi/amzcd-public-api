@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:static": "next build",
+    "export": "next export"
   },
   "dependencies": {
     "eslint-plugin-react-hooks": "^5.2.0",

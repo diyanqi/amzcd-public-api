@@ -56,9 +56,15 @@ export default function Docs() {
                   <code className="text-sm">GET /zz/dict/{'{word}'}?format=json|img</code>
                 </div>
                 
+                <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                  <p className="text-sm text-blue-700">
+                    <strong>数据来源:</strong> 使用 <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer" className="underline">Free Dictionary API</a> 提供真实的英文词典数据
+                  </p>
+                </div>
+                
                 <h3 className="text-lg font-medium text-gray-700 mb-2">参数说明</h3>
                 <ul className="list-disc list-inside text-gray-600 mb-4 space-y-1">
-                  <li><strong>word</strong>: 要查询的单词（路径参数）</li>
+                  <li><strong>word</strong>: 要查询的英文单词（路径参数）</li>
                   <li><strong>format</strong>: 返回格式，可选值为 json 或 img（默认为 img）</li>
                 </ul>
 
