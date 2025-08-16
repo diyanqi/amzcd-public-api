@@ -19,7 +19,7 @@ export default function Home() {
             为开发者提供免费、稳定的API服务
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
             <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">天气查询</h3>
               <p className="text-gray-600 mb-4">
@@ -39,6 +39,16 @@ export default function Home() {
                 GET /zz/dict/{'{单词}'}?format=json/img
               </code>
             </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-4">系统测试</h3>
+              <p className="text-gray-600 mb-4">
+                测试EdgeOne Functions是否正常运行
+              </p>
+              <code className="bg-gray-100 px-3 py-2 rounded text-sm">
+                GET /api/test
+              </code>
+            </div>
           </div>
           
           <div className="mt-12">
@@ -50,6 +60,9 @@ export default function Home() {
             </Link>
             <p className="text-gray-500 mt-4">
               所有图片接口默认宽度：700px，高度自适应，格式为SVG
+            </p>
+            <p className="text-gray-500 mt-2 text-sm">
+              🚀 基于腾讯云EdgeOne边缘计算提供服务
             </p>
           </div>
         </div>

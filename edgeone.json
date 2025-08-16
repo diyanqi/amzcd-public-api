@@ -1,0 +1,15 @@
+{
+  "name": "amzcd-public-api",
+  "functions": {
+    "dir": "./functions"
+  },
+  "build": {
+    "command": "pnpm build",
+    "output": "./out"
+  },
+  "env": {
+    "production": {
+      "API_BASE_URL": "https://your-domain.com"
+    }
+  }
+}
